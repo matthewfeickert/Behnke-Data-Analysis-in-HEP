@@ -7,3 +7,5 @@ To run ROOT notebooks locally, as described in the [JupyROOT documentation page]
 root --notebook
 ```
 to launch a Jupyter server.
+
+If the binder for this repo isn't launching please check the [current build status](http://mybinder.org/status/matthewfeickert/Behnke-Data-Analysis-in-HEP) and either rebuild or open an issue.
