@@ -1,8 +1,29 @@
-FROM andrewosh/binder-base
+# Closely following the Dockerfile from cernphsft/rootbinder
+# c.f. https://github.com/cernphsft/rootbinder/blob/master/Dockerfile
 
-MAINTAINER Matthew Feickert <mfeickert@smu.edu>
+FROM jupyter/scipy-notebook:cf6258237ff9
+
+MAINTAINER Matthew Feickert <matthew.feickert@cern.ch>
+
+# set up a user whose uid is 1000
+ENV NB_USER scientist
+ENV NB_UID 1000
+ENV HOME /home/${NB_USER}
 
 USER root
+RUN adduser --disabled-password \
+    --gecos "Default user" \
+    --uid ${NB_UID} \
+    ${NB_USER}
+
+# Make sure the contents of the repo are in ${HOME}
+COPY . ${HOME}
+USER root
+RUN chown -R ${NB_UID} ${HOME}
+USER ${NB_USER}
+
+# Install a recent version of Jupyter Notebook
+RUN pip install --no-cache-dir notebook==5.*
 
 # Install ROOT prerequisites
 RUN apt-get update
@@ -26,11 +47,6 @@ RUN wget http://root.cern.ch/notebooks/rootbinderdata/root.tar.gz
 RUN tar xzf root.tar.gz
 RUN rm root.tar.gz
 
-# Download and install Fastjet
-RUN wget http://root.cern.ch/notebooks/rootbinderdata/fastjet.tar.gz
-RUN tar xzf fastjet.tar.gz
-RUN rm fastjet.tar.gz
-
 USER main
 
 # Set ROOT environment
@@ -43,7 +59,7 @@ ENV PYTHONPATH      "$ROOTSYS/lib:PYTHONPATH"
 ENV LD_LIBRARY_PATH "/opt/fastjet/lib:$LD_LIBRARY_PATH"
 ENV ROOT_INCLUDE_PATH "/opt/fastjet/include"
 
-# Customise the ROOTbook
+# Customize the ROOTbook
 RUN pip install --upgrade pip
 RUN pip install metakernel
 RUN mkdir -p                                 $HOME/.ipython/kernels
